@@ -1,7 +1,11 @@
 package com.scaler.amit.project_userservice.dtos;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
+@Getter
+@Setter
 public class ExceptionDto {
     private HttpStatus errorCode;
     private String message;
