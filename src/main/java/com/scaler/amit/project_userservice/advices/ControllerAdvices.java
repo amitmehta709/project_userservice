@@ -2,6 +2,7 @@ package com.scaler.amit.project_userservice.advices;
 
 import com.scaler.amit.project_userservice.dtos.ExceptionDto;
 import com.scaler.amit.project_userservice.exceptions.DuplicateRecordsException;
+import com.scaler.amit.project_userservice.exceptions.InvalidPasswordException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,5 +36,11 @@ public class ControllerAdvices {
     ResponseEntity<ExceptionDto> handleUserNameNotFoundException(UsernameNotFoundException ex){
         return new ResponseEntity<>(new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage()),
                 HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    ResponseEntity<ExceptionDto> handleInvalidPasswordException(InvalidPasswordException ex){
+        return new ResponseEntity<>(new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage()),
+                HttpStatus.BAD_REQUEST);
     }
 }

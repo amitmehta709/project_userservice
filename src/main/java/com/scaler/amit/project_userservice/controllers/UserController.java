@@ -5,6 +5,7 @@ import com.scaler.amit.project_userservice.dtos.LoginResponseDto;
 import com.scaler.amit.project_userservice.dtos.SignUpRequestDto;
 import com.scaler.amit.project_userservice.dtos.UserDto;
 import com.scaler.amit.project_userservice.exceptions.DuplicateRecordsException;
+import com.scaler.amit.project_userservice.exceptions.InvalidPasswordException;
 import com.scaler.amit.project_userservice.models.Token;
 import com.scaler.amit.project_userservice.models.User;
 import com.scaler.amit.project_userservice.services.TokenService;
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@RequestBody SignUpRequestDto requestDto) throws DuplicateRecordsException {
+    public ResponseEntity<UserDto> signup(@RequestBody SignUpRequestDto requestDto) throws DuplicateRecordsException, InvalidPasswordException {
         User user = userService.createUser(requestDto.getEmail(),
                 requestDto.getPassword(), requestDto.getName(), requestDto.getStreet(), requestDto.getCity(),
                 requestDto.getState(), requestDto.getZipcode(), requestDto.getCountry());
