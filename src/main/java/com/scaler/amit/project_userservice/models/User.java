@@ -1,11 +1,10 @@
 package com.scaler.amit.project_userservice.models;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,4 +17,7 @@ public class User extends BaseModel {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id",  referencedColumnName = "id")
     private Address address;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Role> roles;
 }

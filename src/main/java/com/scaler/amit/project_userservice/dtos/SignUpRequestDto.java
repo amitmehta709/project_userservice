@@ -3,6 +3,8 @@ package com.scaler.amit.project_userservice.dtos;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class SignUpRequestDto {
@@ -14,4 +16,5 @@ public class SignUpRequestDto {
     private String state;
     private String zipcode;
     private String country;
+    private List<String> roles;
 }

@@ -1,13 +1,18 @@
 package com.scaler.amit.project_userservice.services;
 
 import com.scaler.amit.project_userservice.exceptions.DuplicateRecordsException;
+import com.scaler.amit.project_userservice.exceptions.InvalidDataException;
 import com.scaler.amit.project_userservice.exceptions.InvalidPasswordException;
 import com.scaler.amit.project_userservice.models.Address;
+import com.scaler.amit.project_userservice.models.Role;
 import com.scaler.amit.project_userservice.models.User;
+import com.scaler.amit.project_userservice.repositories.RoleRepository;
 import com.scaler.amit.project_userservice.repositories.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,13 +22,17 @@ public class UserService {
 
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private UserRepository userRepository;
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    private RoleRepository roleRepository;
+
+    public UserService(UserRepository userRepository, RoleRepository roleRepository,
+                       BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public User createUser(String email, String password, String name, String street,
-                           String city, String state, String zip, String country) throws DuplicateRecordsException, InvalidPasswordException {
+                           String city, String state, String zip, String country, List<String> roles) throws DuplicateRecordsException, InvalidPasswordException, InvalidDataException {
 
         //1. Verify if the user exists
         Optional<User> user = userRepository.findByEmail(email);
@@ -37,6 +46,31 @@ public class UserService {
                     "and should have at least one digit, one uppercase letter, " +
                     "one lowercase letter and one special character");
         }
+
+        //Create Roles if not present else use existing role
+        List<Role> roleList = new ArrayList<>();
+        if(!roles.isEmpty())
+        {
+            for(String role : roles)
+            {
+                Optional<Role> roleOptional = roleRepository.findByName(role);
+                if(roleOptional.isPresent())
+                {
+                    roleList.add(roleOptional.get());
+                }
+                else
+                {
+                    Role newRole = new Role();
+                    newRole.setName(role);
+                    roleList.add(roleRepository.save(newRole));
+                }
+            }
+        }
+        else
+        {
+            throw new InvalidDataException("Roles is mandatory while creating user");
+        }
+
         Address address = new Address();
         address.setStreet(street);
         address.setCity(city);
@@ -50,6 +84,7 @@ public class UserService {
         newUser.setUsername(name);
         newUser.setHashedPassword(bCryptPasswordEncoder.encode(password));
         newUser.setAddress(address);
+        newUser.setRoles(roleList);
         return userRepository.save(newUser);
     }
 

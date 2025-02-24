@@ -2,6 +2,7 @@ package com.scaler.amit.project_userservice.advices;
 
 import com.scaler.amit.project_userservice.dtos.ExceptionDto;
 import com.scaler.amit.project_userservice.exceptions.DuplicateRecordsException;
+import com.scaler.amit.project_userservice.exceptions.InvalidDataException;
 import com.scaler.amit.project_userservice.exceptions.InvalidPasswordException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,12 @@ public class ControllerAdvices {
 
     @ExceptionHandler(InvalidPasswordException.class)
     ResponseEntity<ExceptionDto> handleInvalidPasswordException(InvalidPasswordException ex){
+        return new ResponseEntity<>(new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage()),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidDataException.class)
+    ResponseEntity<ExceptionDto> handleInvalidDataException(InvalidDataException ex){
         return new ResponseEntity<>(new ExceptionDto(HttpStatus.BAD_REQUEST, ex.getMessage()),
                 HttpStatus.BAD_REQUEST);
     }
