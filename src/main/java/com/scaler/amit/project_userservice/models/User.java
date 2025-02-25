@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @Entity
 public class User extends BaseModel {
-    private String username;
+    private String name;
     private String hashedPassword;
     private String email;
 

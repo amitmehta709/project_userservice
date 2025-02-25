@@ -79,9 +79,8 @@ public class UserService {
         address.setCountry(country);
 
         User newUser = new User();
-        newUser.setUsername(name);
+        newUser.setName(name);
         newUser.setEmail(email);
-        newUser.setUsername(name);
         newUser.setHashedPassword(bCryptPasswordEncoder.encode(password));
         newUser.setAddress(address);
         newUser.setRoles(roleList);
