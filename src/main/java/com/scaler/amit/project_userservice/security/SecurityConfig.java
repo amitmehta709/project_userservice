@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -39,6 +40,8 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -46,6 +49,7 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) //To enable preAuthorization for role based access
 public class SecurityConfig {
 
     @Bean
@@ -77,8 +81,37 @@ public class SecurityConfig {
         return http.build();
     }
 
+    //This security filter chain created to control which resource access needs Authentication
+    //Security matchers we need to use when we have multiple security filter chains.
+    //In security matcher we can provide on which resource we need to apply security and then we can use request matchers to pick and choose which api needs authentication
+    //This filter chain need to be executed before default security filter chain(order 2) and we can't use anyrequest() here is matchers
+    // because anyrequest() should be part of default/last executing filter chain
     @Bean
     @Order(2)
+    public SecurityFilterChain resourceAccessSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/users/**")
+                .authorizeHttpRequests(authorize -> authorize
+                                .requestMatchers("/users/signup").permitAll() // Public endpoints
+                                .requestMatchers("/users/getuser/**").authenticated() // Require authentication for this endpoint
+                        //.anyRequest().authenticated()
+                )
+                .csrf().disable()
+                .cors().disable()
+                //we can  use this as well with custom jwtAuthenticationConverter
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                        )
+                );
+                //.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http
@@ -90,8 +123,21 @@ public class SecurityConfig {
                 // Form login handles the redirect to the login page from the
                 // authorization server filter chain
                 .formLogin(Customizer.withDefaults());
-
+                //.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
+    }
+
+
+    //This token converter appends prefix ROLE_ to every roles and add it to granted authorities
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_"); // Optional: Add a prefix to roles
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles"); // Claim name in the JWT for roles
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
     }
 //
 //    @Bean

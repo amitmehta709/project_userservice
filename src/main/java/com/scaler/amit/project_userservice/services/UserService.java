@@ -8,6 +8,7 @@ import com.scaler.amit.project_userservice.models.Role;
 import com.scaler.amit.project_userservice.models.User;
 import com.scaler.amit.project_userservice.repositories.RoleRepository;
 import com.scaler.amit.project_userservice.repositories.UserRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -85,6 +86,28 @@ public class UserService {
         newUser.setAddress(address);
         newUser.setRoles(roleList);
         return userRepository.save(newUser);
+    }
+
+    public User getUserByEmail(String email)  {
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isEmpty())
+        {
+            throw new UsernameNotFoundException("User by email: " + email + " doesn't exist.");
+        }
+        return user.get();
+    }
+
+    public User getUserByEmail(Long id)  {
+        Optional<User> user = userRepository.findById(id);
+        if(user.isEmpty())
+        {
+            throw new UsernameNotFoundException("User by Id: " + id + " doesn't exist.");
+        }
+        return user.get();
+    }
+
+    public List<User> getAllUser()  {
+        return userRepository.findAll();
     }
 
     //Password Validation logic
