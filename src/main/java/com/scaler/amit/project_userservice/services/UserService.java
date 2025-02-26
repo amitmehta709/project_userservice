@@ -1,5 +1,6 @@
 package com.scaler.amit.project_userservice.services;
 
+import com.scaler.amit.project_userservice.dtos.ResetPasswordDto;
 import com.scaler.amit.project_userservice.exceptions.DuplicateRecordsException;
 import com.scaler.amit.project_userservice.exceptions.InvalidDataException;
 import com.scaler.amit.project_userservice.exceptions.InvalidPasswordException;
@@ -33,7 +34,15 @@ public class UserService {
     }
 
     public User createUser(String email, String password, String name, String street,
-                           String city, String state, String zip, String country, List<String> roles) throws DuplicateRecordsException, InvalidPasswordException, InvalidDataException {
+                           String city, String state, String zip, String country, List<String> roles,
+                           String resetPasswordQuestion, String resetPasswordAnswer) throws DuplicateRecordsException, InvalidPasswordException, InvalidDataException {
+
+        if(email == null || password == null || name == null || street == null || city == null || state == null
+                || zip == null || country == null || roles == null || resetPasswordQuestion == null
+                || resetPasswordAnswer == null)
+        {
+            throw new InvalidDataException("Invalid data");
+        }
 
         //1. Verify if the user exists
         Optional<User> user = userRepository.findByEmail(email);
@@ -85,6 +94,8 @@ public class UserService {
         newUser.setHashedPassword(bCryptPasswordEncoder.encode(password));
         newUser.setAddress(address);
         newUser.setRoles(roleList);
+        newUser.setResetPasswordQuestion(resetPasswordQuestion);
+        newUser.setResetPasswordAnswer(resetPasswordAnswer);
         return userRepository.save(newUser);
     }
 
@@ -97,17 +108,42 @@ public class UserService {
         return user.get();
     }
 
-    public User getUserByEmail(Long id)  {
-        Optional<User> user = userRepository.findById(id);
-        if(user.isEmpty())
-        {
-            throw new UsernameNotFoundException("User by Id: " + id + " doesn't exist.");
-        }
-        return user.get();
-    }
-
     public List<User> getAllUser()  {
         return userRepository.findAll();
+    }
+
+    public User resetPassword(ResetPasswordDto resetPasswordDto) throws InvalidDataException {
+        Optional<User> optionlUser = userRepository.findByEmail(resetPasswordDto.getEmail());
+        if(optionlUser.isEmpty())
+        {
+            throw new UsernameNotFoundException("User by Email: " + resetPasswordDto.getEmail()
+                    + " doesn't exist.");
+        }
+        User user = optionlUser.get();
+        String actualResetPasswordQuestion = user.getResetPasswordQuestion();
+        String actualResetPasswordAnswer = user.getResetPasswordAnswer();
+
+        if(!resetPasswordDto.getResetPasswordQuestion().equalsIgnoreCase(actualResetPasswordQuestion))
+        {
+            throw new InvalidDataException("Reset Password Question does not match.");
+        }
+
+        if(!resetPasswordDto.getResetPasswordAnswer().equalsIgnoreCase(actualResetPasswordAnswer))
+        {
+            throw new InvalidDataException("Reset Password Answer does not match.");
+        }
+
+        String newEncodedPassword = bCryptPasswordEncoder.encode(resetPasswordDto.getNewPassword());
+        user.setHashedPassword(newEncodedPassword);
+        return userRepository.save(user);
+    }
+
+    public String getResetPasswordQuestion(String email) throws InvalidDataException {
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isEmpty()){
+            throw new UsernameNotFoundException("User by Email: " + email + " doesn't exist.");
+        }
+        return user.get().getResetPasswordQuestion();
     }
 
     //Password Validation logic

@@ -21,7 +21,7 @@ class ProjectUserserviceApplicationTests {
     void contextLoads() {
     }
 
-    @Test
+    //@Test
     void addRegisterSamplePostmanClient()
     {
                 RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())

@@ -92,7 +92,8 @@ public class SecurityConfig {
         http
                 .securityMatcher("/users/**")
                 .authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers("/users/signup").permitAll() // Public endpoints
+                                .requestMatchers("/users/signup",
+                                        "users/resetpassword","users/getresetpasswordquestion/**").permitAll() // Public endpoints
                                 .requestMatchers("/users/getuser/**").authenticated() // Require authentication for this endpoint
                         //.anyRequest().authenticated()
                 )

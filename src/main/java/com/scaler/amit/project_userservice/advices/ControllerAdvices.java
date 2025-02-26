@@ -6,6 +6,7 @@ import com.scaler.amit.project_userservice.exceptions.InvalidDataException;
 import com.scaler.amit.project_userservice.exceptions.InvalidPasswordException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,6 +20,12 @@ public class ControllerAdvices {
         ExceptionDto exceptionDto = new ExceptionDto(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         //ex.printStackTrace();
         return new ResponseEntity<>(exceptionDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<ExceptionDto> handleRuntimeException(AccessDeniedException ex){
+        ExceptionDto exceptionDto = new ExceptionDto(HttpStatus.FORBIDDEN, ex.getMessage());
+        return new ResponseEntity<>(exceptionDto, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(DuplicateRecordsException.class)

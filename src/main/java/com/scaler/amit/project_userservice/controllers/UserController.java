@@ -1,5 +1,6 @@
 package com.scaler.amit.project_userservice.controllers;
 
+import com.scaler.amit.project_userservice.dtos.ResetPasswordDto;
 import com.scaler.amit.project_userservice.dtos.SignUpRequestDto;
 import com.scaler.amit.project_userservice.dtos.UserDto;
 import com.scaler.amit.project_userservice.exceptions.DuplicateRecordsException;
@@ -10,7 +11,13 @@ import com.scaler.amit.project_userservice.services.TokenService;
 import com.scaler.amit.project_userservice.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -31,7 +38,8 @@ public class UserController {
     public ResponseEntity<UserDto> signup(@RequestBody SignUpRequestDto requestDto) throws DuplicateRecordsException, InvalidPasswordException, InvalidDataException {
         User user = userService.createUser(requestDto.getEmail(),
                 requestDto.getPassword(), requestDto.getName(), requestDto.getStreet(), requestDto.getCity(),
-                requestDto.getState(), requestDto.getZipcode(), requestDto.getCountry(), requestDto.getRoles());
+                requestDto.getState(), requestDto.getZipcode(), requestDto.getCountry(), requestDto.getRoles(),
+                requestDto.getResetPasswordQuestion(), requestDto.getResetPasswordAnswer());
 
         return new ResponseEntity<>(UserDto.fromUser(user), HttpStatus.CREATED);
     }
@@ -49,13 +57,37 @@ public class UserController {
 
     @GetMapping("/getuser/{email}")
     public ResponseEntity<UserDto> getUsersByEmail(@PathVariable String email) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken) {
+            // Extract the JWT token
+            Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
+            String username = jwt.getClaim("sub");  // username is email
+           if (!email.equalsIgnoreCase(username)) { // Case-insensitive check
+               throw new AccessDeniedException("You cannot access another user's data.");
+            }
+        }
+        else {
+            throw new BadCredentialsException("Authentication is not valid.");
+        }
+
         User user = userService.getUserByEmail(email);
         return new ResponseEntity<>(UserDto.fromUser(user), HttpStatus.OK);
     }
 
-    @GetMapping("/getuser/{id}")
-    public ResponseEntity<UserDto> getAllUsers(@PathVariable Long id) {
-        User user = userService.getUserByEmail(id);
+    @GetMapping("/getresetpasswordquestion/{email}")
+    public ResponseEntity<String> getResetPasswordQuestion(@PathVariable String email) throws InvalidDataException {
+        String question = userService.getResetPasswordQuestion(email);
+        String jsonResponse = "{\"resetPasswordQuestion\":\""+question+"\"}";
+        return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+    }
+
+    @PostMapping("/resetpassword")
+    public ResponseEntity<UserDto> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) throws InvalidDataException {
+        if(resetPasswordDto.getEmail()== null || resetPasswordDto.getResetPasswordQuestion() == null
+        || resetPasswordDto.getResetPasswordAnswer() == null || resetPasswordDto.getNewPassword() == null){
+            throw new InvalidDataException("Invalid Request Body.");
+        }
+        User user = userService.resetPassword(resetPasswordDto);
         return new ResponseEntity<>(UserDto.fromUser(user), HttpStatus.OK);
     }
 }

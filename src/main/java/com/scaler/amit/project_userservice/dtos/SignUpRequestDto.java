@@ -17,4 +17,6 @@ public class SignUpRequestDto {
     private String zipcode;
     private String country;
     private List<String> roles;
+    private String resetPasswordQuestion;
+    private String resetPasswordAnswer;
 }
