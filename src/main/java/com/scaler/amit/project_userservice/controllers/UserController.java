@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -89,5 +90,83 @@ public class UserController {
         }
         User user = userService.resetPassword(resetPasswordDto);
         return new ResponseEntity<>(UserDto.fromUser(user), HttpStatus.OK);
+    }
+
+    @PatchMapping("/updateuser/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates)
+    {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken) {
+            // Extract the JWT token
+            Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
+            String userId = jwt.getClaim("userId");  // username is email
+            if (!userId.equalsIgnoreCase(String.valueOf(id))) { // Case-insensitive check
+                throw new AccessDeniedException("You cannot update another user's data.");
+            }
+        }
+        else {
+            throw new BadCredentialsException("Authentication is not valid.");
+        }
+
+        User updatedUser = userService.updateUser(id,updates);
+        return new ResponseEntity<>(UserDto.fromUser(updatedUser), HttpStatus.OK);
+    }
+
+    @PatchMapping("/addrole/{id}")
+    public ResponseEntity<UserDto> addRole(@PathVariable Long id, @RequestParam String roleName)
+    {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken) {
+            // Extract the JWT token
+            Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
+            String userId = jwt.getClaim("userId");  // username is email
+            if (!userId.equalsIgnoreCase(String.valueOf(id))) { // Case-insensitive check
+                throw new AccessDeniedException("You cannot update another user's data.");
+            }
+        }
+        else {
+            throw new BadCredentialsException("Authentication is not valid.");
+        }
+
+        User updatedUser = userService.addRole(id,roleName);
+        return new ResponseEntity<>(UserDto.fromUser(updatedUser), HttpStatus.OK);
+    }
+
+    @PatchMapping("/removerole/{id}")
+    public ResponseEntity<UserDto> removeRole(@PathVariable Long id, @RequestParam String roleName) throws InvalidDataException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken) {
+            // Extract the JWT token
+            Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
+            String userId = jwt.getClaim("userId");  // username is email
+            if (!userId.equalsIgnoreCase(String.valueOf(id))) { // Case-insensitive check
+                throw new AccessDeniedException("You cannot update another user's data.");
+            }
+        }
+        else {
+            throw new BadCredentialsException("Authentication is not valid.");
+        }
+
+        User updatedUser = userService.removeRole(id,roleName);
+        return new ResponseEntity<>(UserDto.fromUser(updatedUser), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/deleteuser/{email}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String email ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken) {
+            // Extract the JWT token
+            Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
+            String username = jwt.getClaim("sub");  // username is email
+            if (!email.equalsIgnoreCase(username)) { // Case-insensitive check
+                throw new AccessDeniedException("You cannot delete another user.");
+            }
+        }
+        else {
+            throw new BadCredentialsException("Authentication is not valid.");
+        }
+
+        userService.deleteUser(email);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -5,7 +5,6 @@ import com.scaler.amit.project_userservice.models.Role;
 import com.scaler.amit.project_userservice.models.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -26,8 +25,11 @@ public class CustomUserDetails implements UserDetails {
     private boolean credentialsNonExpired;
     private boolean enabled;
     @Getter
-    @Setter
-    private Long userId;
+    private String userId;
+    @Getter
+    private String name;
+    @Getter
+    private String address;
 
     public CustomUserDetails(User user) {
         this.username = user.getEmail();
@@ -36,7 +38,17 @@ public class CustomUserDetails implements UserDetails {
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
         this.enabled = true;
-        this.userId = user.getId();
+        this.userId = String.valueOf(user.getId());
+        this.name = user.getName();
+
+        if(user.getAddress() != null){
+            String addrs = user.getAddress().getStreet() +"," +
+                    user.getAddress().getCity() + "," +
+                    user.getAddress().getState() + "," +
+                    user.getAddress().getCountry() + " - " +
+                    user.getAddress().getZipcode();
+            this.address = addrs;
+        }
 
         List<CustomGrantedAuthority> grantedAuthorities = new ArrayList<>();
         for (Role role : user.getRoles()) {

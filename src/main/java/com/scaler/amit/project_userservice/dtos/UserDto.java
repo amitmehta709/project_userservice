@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class UserDto {
+    private Long id;
     private String name;
     private String email;
     private String address;
@@ -18,6 +19,7 @@ public class UserDto {
 
     public static UserDto fromUser(User user){
         UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
         userDto.setName(user.getName());
         userDto.setEmail(user.getEmail());
 

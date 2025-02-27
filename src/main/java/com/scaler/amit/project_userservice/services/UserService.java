@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -99,6 +100,104 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
+    //patch user
+    public User updateUser(Long id, Map<String, Object> updates)
+    {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if(optionalUser.isEmpty())
+        {
+            throw new UsernameNotFoundException("User by id: " + id + " doesn't exist.");
+        }
+
+        User user = optionalUser.get();
+        updates.forEach((key, value) -> {
+            switch (key) {
+                case "name":
+                    user.setName((String) value);
+                    break;
+                case "email":
+                    user.setEmail((String) value);
+                    break;
+                case "hashedPassword":
+                    user.setHashedPassword(bCryptPasswordEncoder.encode((String) value));
+                    break;
+                case "resetPasswordQuestion":
+                    user.setResetPasswordQuestion((String) value);
+                    break;
+                case "resetPasswordAnswer":
+                    user.setResetPasswordAnswer((String) value);
+                    break;
+                case "street":
+                    user.getAddress().setStreet((String) value);
+                    break;
+                case "city":
+                    user.getAddress().setCity((String) value);
+                    break;
+                case "state":
+                    user.getAddress().setState((String) value);
+                    break;
+                case "zipcode":
+                    user.getAddress().setZipcode((String) value);
+                    break;
+                case "country":
+                    user.getAddress().setCountry((String) value);
+                    break;
+            }
+        });
+        return userRepository.save(user);
+    }
+
+    public User addRole(Long id, String roleName)
+    {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if(optionalUser.isEmpty())
+        {
+            throw new UsernameNotFoundException("User by id: " + id + " doesn't exist.");
+        }
+        User user = optionalUser.get();
+
+        Role addRole;
+        if(roleRepository.findByName(roleName).isPresent())
+        {
+            addRole = roleRepository.findByName(roleName).get();
+        }
+        else
+        {
+            addRole = new Role();
+            addRole.setName(roleName);
+            roleRepository.save(addRole);
+        }
+        user.getRoles().add(addRole);
+        return userRepository.save(user);
+    }
+
+    public User removeRole(Long id, String roleName) throws InvalidDataException {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if(optionalUser.isEmpty())
+        {
+            throw new UsernameNotFoundException("User by id: " + id + " doesn't exist.");
+        }
+        User user = optionalUser.get();
+
+        Optional<Role> optionalRole = roleRepository.findByName(roleName);
+        if(optionalRole.isEmpty())
+        {
+            throw new InvalidDataException("Role : " +roleName+" does not exist" );
+        }
+        user.getRoles().remove(optionalRole.get());
+        return userRepository.save(user);
+    }
+
+    public void deleteUser(String email){
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if(optionalUser.isEmpty()){
+            throw new UsernameNotFoundException("User by email: " + email + " doesn't exist.");
+        }
+        User user = optionalUser.get();
+        user.getRoles().removeAll(user.getRoles());
+        userRepository.delete(user);
+    }
+
     public User getUserByEmail(String email)  {
         Optional<User> user = userRepository.findByEmail(email);
         if(user.isEmpty())
@@ -168,6 +267,4 @@ public class UserService {
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
     }
-
-
 }
