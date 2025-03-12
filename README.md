@@ -13,8 +13,15 @@ This API uses **OAuth 2.0 with JWT tokens** for authentication. Clients must inc
 **Example Header:**
 
 ```
-Authorization: JWT_TOKEN
+Authorization: OAuth2.0 token
 ```
+
+## Database and Migrations
+
+- This service uses **Spring Hibernate** for database queries, ensuring efficient ORM-based interactions with the database.
+- **Flyway** is used for database schema migrations, enabling version-controlled updates and rollback capabilities.
+- Database changes are managed through Flyway migration scripts located in the `db/migration` folder, which ensures smooth and structured updates without data loss.
+- The schema updates are applied automatically at application startup, preventing inconsistencies across environments.
 
 ## Endpoints
 
@@ -38,7 +45,7 @@ POST /users/signup
   "state": "NY",
   "zipcode": "10001",
   "country": "USA",
-  "roles": ["ROLE_USER"],
+  "roles": ["USER"],
   "resetPasswordQuestion": "What is your pet's name?",
   "resetPasswordAnswer": "Fluffy"
 }
@@ -51,7 +58,7 @@ POST /users/signup
   "id": 1,
   "email": "user@example.com",
   "name": "John Doe",
-  "roles": ["ROLE_USER"]
+  "roles": ["USER"]
 }
 ```
 
@@ -67,7 +74,7 @@ POST /users/signup
 GET /users/getuser/all
 ```
 
-**Description:** Fetches all users (Only accessible by `ROLE_SUPER_ADMIN`). **Response:**
+**Description:** Fetches all users (Only accessible by `SUPER_ADMIN`). **Response:**
 
 ```json
 [
@@ -75,7 +82,7 @@ GET /users/getuser/all
     "id": 1,
     "email": "user@example.com",
     "name": "John Doe",
-    "roles": ["ROLE_USER"]
+    "roles": ["USER"]
   }
 ]
 ```
@@ -99,7 +106,7 @@ GET /users/getuser/{email}
   "id": 1,
   "email": "user@example.com",
   "name": "John Doe",
-  "roles": ["ROLE_USER"]
+  "roles": ["USER"]
 }
 ```
 
@@ -153,7 +160,7 @@ POST /users/resetpassword
   "id": 1,
   "email": "user@example.com",
   "name": "John Doe",
-  "roles": ["ROLE_USER"]
+  "roles": ["USER"]
 }
 ```
 
@@ -204,7 +211,7 @@ PATCH /users/addrole/{id}
 **Description:** Adds a role to the user (Only accessible to the user themselves). **Query Parameter:**
 
 ```
-roleName=ROLE_ADMIN
+roleName=ADMIN
 ```
 
 **Response:**
@@ -213,7 +220,7 @@ roleName=ROLE_ADMIN
 {
   "id": 1,
   "email": "user@example.com",
-  "roles": ["ROLE_USER", "ROLE_ADMIN"]
+  "roles": ["USER", "ADMIN"]
 }
 ```
 
@@ -241,7 +248,7 @@ roleName=ROLE_ADMIN
 {
   "id": 1,
   "email": "user@example.com",
-  "roles": ["ROLE_USER"]
+  "roles": ["USER"]
 }
 ```
 
@@ -287,5 +294,5 @@ DELETE /users/deleteuser/{email}
 
 ### Author
 
-*API developed for user management with OAuth 2.0 authentication and role-based access control.*
+*API developed for user management with OAuth 2.0 authentication, role-based access control using JWT tokens, and database management using Spring Hibernate with Flyway migrations.*
 
