@@ -23,6 +23,10 @@ Authorization: OAuth2.0 token
 - Database changes are managed through Flyway migration scripts located in the `db/migration` folder, which ensures smooth and structured updates without data loss.
 - The schema updates are applied automatically at application startup, preventing inconsistencies across environments.
 
+## Registering a New Client with OAuth Server
+
+- A new client can be registered with the OAuth server by running the test `addRegisterSamplePostmanClient` available in the `ProjectUserserviceApplicationTests` class, located in `src/test/java/com/scaler/amit/project_userservice` by providing `ClientId`, `ClientSecret`, `redirectUri`, `postLogoutRedirectUri`. Provide client secret by encrypting it using Bcrypt.
+
 ## Endpoints
 
 ### 1. User Signup (Public)
