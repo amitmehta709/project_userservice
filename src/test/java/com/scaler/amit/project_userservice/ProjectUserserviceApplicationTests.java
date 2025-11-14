@@ -27,6 +27,7 @@ class ProjectUserserviceApplicationTests {
                 RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("scaler")
                 .clientSecret("$2a$12$qI9/zPEx2tITCJwGI6ni7u.9VEUxcerU2xi3YU7vsACcwomy4A9JK") //scaler-secret
+
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)

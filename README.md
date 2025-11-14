@@ -300,3 +300,31 @@ DELETE /users/deleteuser/{email}
 
 *API developed for user management with OAuth 2.0 authentication, role-based access control using JWT tokens, and database management using Spring Hibernate with Flyway migrations.*
 
+## 🧩 How to Run the User Service Locally
+
+Follow these steps to set up and run the **Notification Microservice** on your local environment.
+
+---
+
+### 🛠️ Prerequisites
+
+Make sure you have the following installed:
+
+- **Java 17+**
+- **Maven**
+- **Docker** (To run user service on Docker)
+- **Git**
+
+---
+
+### 🧱 1. Clone the Repository
+
+```bash
+git clone https://github.com/amitmehta709/project_userservice.git
+cd user-service
+```
+
+### 🐳 2. Start User Service Using Docker
+```bash
+docker-compose up -d
+```
